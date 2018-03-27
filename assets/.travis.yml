@@ -1,0 +1,29 @@
+sudo: true
+os: osx
+cache: false
+env:
+  matrix:
+  - URL=https://developer.salesforce.com/media/salesforce-cli/sfdx-osx.pkg
+  global:
+  - secure: T59cI5GUtF9QxPIKpld0JW3n0gKjBcALbXb9wtU9PgFoxitRm+EwvQqjiZS9WxNHBEGxmLs1fHwFJIKputIhQOlSi+ZhdhZx5Ee/iP2syuuvh9T+HXU45KLpQv9pEvA62eszl40uusbTpTYYfX1ivh6UdCze39cHnVJxldGcNHbJqB7m6cIU5b9MzNrdSHR5tfkDgQUPpsWx5IL+jiy3y2ihiSWKBCiAcveTQtoi0PNuKOoBIZMUGILxpMjDhdr86W4Zoz0+a7/vJKCjHDy7FEsFSIiKVF4e73eHXkDZzBvXX0UVb0FZ/nH4i+x5OAZRz8feFLvfAlUxSECf+E4VE1RHGFbVss2s2H24dVZItaYc0KjUX6tc+us/N14/wn/hehxFmKxt4ieMounB2sALTPn+HTb9IpZ/7Rdx+uuqThZWvIvZbqsMrDZ8MLjQ6+OANd354qDZVoYGB+eGL2g7JuES7ooUjSPad66TV413aeagnOBVQ3f4SGBuyMc5UslTYsOvTlLx62t9HSZcx606facG1uszf5Ht+WNq2M6BMQ4fKAuE0L077uiCkuUKL4Lz5YJ4NIT1ozIBH/Cm2KYyH+gqEx/P/bspVZmLr/8agr6aPxH7VK+s2ytGpaaBxFlt0eyZ6Y9eLBUWcVoNKlMRRVTxxCC2A+Fia/dekj9QpRM=
+  - secure: i9ltg4S3a0FCoXq/zoS59ltQGKTy3MBH2YvL75fy3xLI3/oT0GN9uDTtyaTE5yMOaF8w5++d5mFp4W1FW76OI1SQOaFc3ftPG1kQJCa1FGB+iAfDPZRN452gR3SRHoUXOXRTb9ROIVJd29H86F0dIje+l3ksAIlrNq939FI7NqfSuJGu2EKk+Iy76zyqwl8Uas9Q4F+glbBgpONQSTkyuwgxm0zUqcuamoltevgrFF8B1O4RtMuVRmr3YsnnWz6PQvFxPZJ3eXNbjEHjbXcFsGfHlXvqP//Ut5CphrvYdKHjz+Hf8SOiF9uB3iIJkDte9zgJuIBWrwQ00E+vCK4AhJqusqMcUIXZXpxG8fo0ZUoKYnsjhM8X+9ISiOwV/4vpEd/q/s3ehKzNx8ky6UmRAvRRj6O+xbNRKsBn+cTid/j39UjOkdcXAR8W/Rs3u5KIR8m7lxnc7p6yXc4fL5deRrG6LKQ1CLw/21rv+jiFMmRZGxQO3ZY94a9bXuXlbwXFS+QT91kjXAhTBragXHBKvCLYbqsnouQmyiThRlTHffbY0dxsKyJqiq8Pw/XZWCEefK1cqYWw3NlS1Io2QFRcaWUW1iO2x/VumgiFBfEBGrAXNExl97uiAMxqFmPelKWik595tCfYEfBY2GlhXUWtu8DQbTgh50SnP+gIxag8yZE=
+  - secure: X54St4e9ggQR/PJnuRSVMVJ4puy4ijNnNK0psaxi1QG9s8qqgZ4IrMbQTdeuXbZ3J8pqfGdaH6r2u4pGmCAlUs1l/cMyeeSQWGSwb3KdYuz3ruaeN0EStLuK4ZUS7Ug4AyvTfW/uHL1hZ8lqjVPkr3fsIrH4MV/GZ4VoYAKZuk3ISqx2zv6CkBkGCOdrnKtERV4Eu5FqaDOO7oe33t19pgDh0XtG93FSNppaPRJTLsDUBVsDghBC/+N3po/YDtsW84Cb7bFrshRiEmaYQuzOwEF2sAM5mPjchp4Io3b+XrsaABsQkg5SkTebkm5W/BGXTqdMqbXAicsq+L2gvq44ZGDnI7BTEwSOheK2oC+3DK0JLTfGpdN4G/b/tWX6Phk3tIKKpqW+kk22ZrtF62jqekZloLeOB1edhMo22/FQKnkyXP3eeKblvkwM6SPoWW8ljK/NnZyGQ9I+0AL4ZPvcph/pOlkGFUqSJgu0IGPWSPZpWler3BCCa3K0pg2yGy4Ztel7vdv2VnYCmx7PaA+7+JSHmoPVWSNXKDdTRcaFO28wX8jiK4U7IWGiIJXRE+NUFxcTZsn0fO8W7azxmkuU3598K7/Q9UTbb2p0ymoxjfKN6COldvz+Utbw870+OAGmC1rLKOldV4NxkII6sFQAMbWknloeDmJMMWkM9PmRCtw=
+before_install:
+- openssl aes-256-cbc -k $SERVER_KEY_PASS -in assets/server.key.enc -out assets/server.key
+  -d
+- export SFDX_AUTOUPDATE_DISABLE=true
+- export SFDX_USE_GENERIC_UNIX_KEYCHAIN=true
+- export SFDX_DOMAIN_RETRY=300
+- curl $URL --output sfdx-osx.pkg
+- sudo installer -pkg sfdx-osx.pkg -target /
+- export PATH=./sfdx/$(pwd):$PATH
+- sfdx update
+- sfdx --version
+- sfdx plugins --core
+- sfdx force:auth:jwt:grant --clientid $CONSUMER_KEY --jwtkeyfile assets/server.key
+  --username $DEVHUB_USERNAME --setdefaultdevhubusername -a huborg
+script:
+- sfdx force:org:create -v huborg -s -f config/project-scratch-def.json -a ciorg
+- sfdx force:source:push -u ciorg
+- sfdx force:apex:test:run -u ciorg -c -r human -w 10
+- sfdx force:org:delete -u ciorg -p
