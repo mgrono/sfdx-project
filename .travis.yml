@@ -1,0 +1,32 @@
+# Because we’re running a command to install software, the process needs superuser access to the virtual machine, which is why we specify sudo: true
+sudo: true
+# Specify the environment for the virtual machine, https://docs.travis-ci.com/user/reference/overview/
+os: osx
+# Should dependencies installed during the build be cached and reused between builds, https://docs.travis-ci.com/user/caching/#Things-not-to-cache
+cache: false
+# Specify an environment variable `URL` to where we can download and install the Salesforce CLI
+env:
+  matrix:
+  - URL=https://developer.salesforce.com/media/salesforce-cli/sfdx-osx.pkg
+# Shell commands to execute to setup environment in build lifecycle, https://docs.travis-ci.com/user/customizing-the-build/#The-Build-Lifecycle
+# We install the Salesforce CLI and authorize the DevHub org using JWT OAuth flow
+before_install:
+- openssl aes-256-cbc -k $SERVER_KEY_PASS -in assets/server.key.enc -out assets/server.key -d
+- export SFDX_AUTOUPDATE_DISABLE=true
+- export SFDX_USE_GENERIC_UNIX_KEYCHAIN=true
+- export SFDX_DOMAIN_RETRY=300
+- curl $URL --output sfdx-osx.pkg
+- sudo installer -pkg sfdx-osx.pkg -target /
+- export PATH=./sfdx/$(pwd):$PATH
+- sfdx update
+- sfdx --version
+- sfdx plugins --core
+- sfdx force:auth:jwt:grant --clientid $CONSUMER_KEY --jwtkeyfile assets/server.key
+  --username $DEVHUB_USERNAME --setdefaultdevhubusername -a huborg
+# Shell commands to execute when performing the actual build, https://docs.travis-ci.com/user/customizing-the-build/#The-Build-Lifecycle
+# We create a scratch org, push the metadata to it, run apex tests, then delete the scratch org because it is no longer needed
+script:
+- sfdx force:org:create -v huborg -s -f config/project-scratch-def.json -a ciorg
+- sfdx force:source:push -u ciorg
+- sfdx force:apex:test:run -u ciorg -c -r human -w 10
+- sfdx force:org:delete -u ciorg -p
